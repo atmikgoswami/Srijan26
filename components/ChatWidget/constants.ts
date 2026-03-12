@@ -34,4 +34,11 @@ export const QUICK_QUESTIONS = [
       "Srijan 2026 is scheduled from April 9th to 12th, 2026.\n\nIt will be held at Jadavpur University Salt Lake Campus.",
     link: null,
   },
+  {
+    id: 4,
+    label: "How to order Srijan merchandise?",
+    answer:
+      "1. Ensure you are logged in to the portal.\n2. Go to the 'Merchandise' page.\n3. Select your T-shirt size.\n4. Choose your preferred color (White or Black).\n5. Select whether you want custom text on the back.\n6. If yes, enter the text you want printed.\n7. Click 'Buy Now'.\n8. Complete payment using UPI, Card, or Net Banking.\n9. After successful payment, the order will appear on your dashboard.",
+    link: "/merchandise",
+  },
 ];
