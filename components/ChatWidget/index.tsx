@@ -2,21 +2,22 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Send, X } from "lucide-react";
+import { Send, X, Maximize2, Minimize2 } from "lucide-react";
 import { Message, QUICK_QUESTIONS, BOT_AVATAR, FALLBACK_AVATAR } from "./constants";
 import { sendMessageToBot } from "./api";
 import { ChatMessages } from "./ChatMessages";
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [visible, setVisible] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content:
-        "Hi! I am Kalpana 3.0, the official mascot for Srijan 2026. Ask me anything about events, dates, or rules!",
+      content: `Hello! I'm Kalpana 3.0, your AI guide for Srijan 2026.
+                Need details about events, timelines, rules, or registrations? Just ask — I've got the answers.`,
     },
   ]);
 
@@ -39,6 +40,11 @@ export default function ChatWidget() {
       window.removeEventListener("resize", update);
     };
   }, [isHome, isOpen]);
+
+  // Close fullscreen when chat is closed
+  useEffect(() => {
+    if (!isOpen) setIsFullscreen(false);
+  }, [isOpen]);
 
   const handleQuickReply = (option: typeof QUICK_QUESTIONS[number]) => {
     setMessages((prev) => [
@@ -92,6 +98,10 @@ export default function ChatWidget() {
           from { opacity: 0; transform: translateY(16px) scale(0.97); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
+        @keyframes srijan-fadein-fs {
+          from { opacity: 0; transform: scale(0.98); }
+          to   { opacity: 1; transform: scale(1); }
+        }
         @keyframes srijan-chip-in {
           from { opacity: 0; transform: translateY(8px); }
           to   { opacity: 1; transform: translateY(0); }
@@ -100,9 +110,10 @@ export default function ChatWidget() {
           0%, 100% { box-shadow: 0 0 18px 4px rgba(240,148,0,0.35); }
           50%       { box-shadow: 0 0 32px 8px rgba(240,148,0,0.6); }
         }
-        .srijan-chat-window { animation: srijan-fadein 0.22s ease both; }
-        .srijan-chip        { animation: srijan-chip-in 0.3s ease both; }
-        .srijan-glow        { animation: srijan-pulse-glow 3s ease-in-out infinite; }
+        .srijan-chat-window     { animation: srijan-fadein 0.22s ease both; }
+        .srijan-chat-fullscreen { animation: srijan-fadein-fs 0.2s ease both; }
+        .srijan-chip            { animation: srijan-chip-in 0.3s ease both; }
+        .srijan-glow            { animation: srijan-pulse-glow 3s ease-in-out infinite; }
         .srijan-scrollbar::-webkit-scrollbar { width: 4px; }
         .srijan-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); border-radius: 99px; }
         .srijan-scrollbar::-webkit-scrollbar-thumb { background: rgba(235,216,125,0.2); border-radius: 99px; }
@@ -112,7 +123,9 @@ export default function ChatWidget() {
         .srijan-widget-hidden  { opacity: 0; pointer-events: none; transform: translateY(20px); }
         .srijan-widget-visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
         .srijan-toggle-size     { width: 58px; height: 58px; }
-        .srijan-toggle-img-size { width: 58px; height: 58px; }
+        .srijan-toggle-img-size { width: 58px; height: 58px; object-fit: cover; object-position: center 20%; }
+        .srijan-fs-btn { transition: color 0.15s, background 0.15s; }
+        .srijan-fs-btn:hover { color: #f09400 !important; background: rgba(240,148,0,0.1) !important; }
         @media (max-width: 640px) {
           .srijan-toggle-size     { width: 46px; height: 46px; }
           .srijan-toggle-img-size { width: 46px; height: 46px; }
@@ -123,6 +136,74 @@ export default function ChatWidget() {
           }
         }
       `}</style>
+
+      {isOpen && isFullscreen && (
+        <div
+          className="srijan-chat-fullscreen"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 10000,
+            display: "flex",
+            flexDirection: "column",
+            background: "linear-gradient(160deg, #1e0808 0%, #160505 60%, #1a0a05 100%)",
+            fontFamily: "var(--font-euclid), 'Euclid Circular B', sans-serif",
+          }}
+        >
+          {/* Header */}
+          <div style={{
+            padding: "12px 16px",
+            borderBottom: "1px solid rgba(235,216,125,0.12)",
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            background: "linear-gradient(90deg, rgba(240,148,0,0.06) 0%, rgba(240,0,0,0.04) 100%)",
+            flexShrink: 0,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ position: "relative" }}>
+                <img src={BOT_AVATAR} alt="Kalpana"
+                  style={{ width: 36, height: 36, borderRadius: "50%", border: "1.5px solid rgba(235,216,125,0.35)", objectFit: "cover", background: "#2a0d0d" }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_AVATAR; }}
+                />
+                <span style={{ position: "absolute", bottom: 1, right: 1, width: 9, height: 9, borderRadius: "50%", background: "#22c55e", border: "2px solid #160505" }} />
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#ebd87d", fontWeight: 700, fontSize: 13, letterSpacing: "0.03em", fontFamily: "var(--font-elnath), sans-serif" }}>KALPANA 3.0</span>
+                <span style={{ display: "block", color: "rgba(255,255,255,0.4)", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase" }}>Srijan&nbsp;2026&nbsp;AI</span>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 4 }}>
+              <button onClick={() => setIsFullscreen(false)} className="srijan-fs-btn"
+                style={{ background: "transparent", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center", padding: 6, borderRadius: 8 }}
+                aria-label="Exit fullscreen"
+              ><Minimize2 size={16} /></button>
+              <button onClick={() => setIsOpen(false)} className="srijan-fs-btn"
+                style={{ background: "transparent", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center", padding: 6, borderRadius: 8 }}
+                aria-label="Close chat"
+              ><X size={17} /></button>
+            </div>
+          </div>
+
+          {/* Messages */}
+          <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", maxWidth: 800, width: "100%", margin: "0 auto", alignSelf: "stretch" }}>
+            <ChatMessages messages={messages} isLoading={isLoading} onQuickReply={handleQuickReply} />
+          </div>
+
+          {/* Input */}
+          <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(235,216,125,0.1)", display: "flex", gap: 8, alignItems: "flex-end", background: "rgba(255,255,255,0.02)", maxWidth: 800, width: "100%", margin: "0 auto", alignSelf: "stretch", boxSizing: "border-box" }}>
+            <textarea
+              value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
+              placeholder="Enter message…" rows={1} className="srijan-textarea"
+              style={{ flex: 1, background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.9)", fontSize: 14, padding: "11px 14px", borderRadius: 12, border: "1px solid rgba(235,216,125,0.15)", outline: "none", resize: "none", minHeight: 44, maxHeight: 160, fontFamily: "inherit", lineHeight: 1.5, caretColor: "#f09400" }}
+              onFocus={(e) => { (e.target as HTMLTextAreaElement).style.borderColor = "rgba(235,216,125,0.35)"; }}
+              onBlur={(e) => { (e.target as HTMLTextAreaElement).style.borderColor = "rgba(235,216,125,0.15)"; }}
+            />
+            <button onClick={handleSend} disabled={isLoading || !input.trim()}
+              style={{ width: 44, height: 44, borderRadius: 12, border: "none", cursor: isLoading || !input.trim() ? "not-allowed" : "pointer", background: isLoading || !input.trim() ? "rgba(235,216,125,0.1)" : "linear-gradient(135deg, #f09400, #ebd87d)", color: isLoading || !input.trim() ? "rgba(255,255,255,0.25)" : "#160505", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s", opacity: isLoading || !input.trim() ? 0.5 : 1 }}>
+              <Send size={17} />
+            </button>
+          </div>
+        </div>
+      )}
 
       <div
         className={`srijan-widget ${visible ? "srijan-widget-visible" : "srijan-widget-hidden"}`}
@@ -139,86 +220,63 @@ export default function ChatWidget() {
         }}
       >
         {/* Chat window */}
-        {isOpen && (
+        {isOpen && !isFullscreen && (
           <div
             className="srijan-chat-window"
             style={{
-              width: "380px",
-              height: "600px",
-              display: "flex",
-              flexDirection: "column",
-              overflow: "hidden",
-              borderRadius: "16px",
-              border: "1px solid rgba(235,216,125,0.18)",
+              width: "380px", height: "600px",
+              display: "flex", flexDirection: "column", overflow: "hidden",
+              borderRadius: "16px", border: "1px solid rgba(235,216,125,0.18)",
               background: "linear-gradient(160deg, #1e0808 0%, #160505 60%, #1a0a05 100%)",
               boxShadow: "0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(240,148,0,0.08) inset",
             }}
           >
             {/* Header */}
-            <div
-              style={{
-                padding: "12px 14px",
-                borderBottom: "1px solid rgba(235,216,125,0.12)",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                background: "linear-gradient(90deg, rgba(240,148,0,0.06) 0%, rgba(240,0,0,0.04) 100%)",
-              }}
-            >
+            <div style={{
+              padding: "12px 14px", borderBottom: "1px solid rgba(235,216,125,0.12)",
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              background: "linear-gradient(90deg, rgba(240,148,0,0.06) 0%, rgba(240,0,0,0.04) 100%)",
+            }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ position: "relative" }}>
-                  <img
-                    src={BOT_AVATAR} alt="Kalpana"
+                  <img src={BOT_AVATAR} alt="Kalpana"
                     style={{ width: 36, height: 36, borderRadius: "50%", border: "1.5px solid rgba(235,216,125,0.35)", objectFit: "cover", background: "#2a0d0d" }}
                     onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_AVATAR; }}
                   />
                   <span style={{ position: "absolute", bottom: 1, right: 1, width: 9, height: 9, borderRadius: "50%", background: "#22c55e", border: "2px solid #160505" }} />
                 </div>
                 <div>
-                  <span style={{ display: "block", color: "#ebd87d", fontWeight: 700, fontSize: 13, letterSpacing: "0.03em", fontFamily: "var(--font-elnath), sans-serif" }}>
-                    KALPANA 3.0
-                  </span>
-                  <span style={{ display: "block", color: "rgba(255,255,255,0.4)", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                    Srijan&nbsp;2026&nbsp;AI
-                  </span>
+                  <span style={{ display: "block", color: "#ebd87d", fontWeight: 700, fontSize: 13, letterSpacing: "0.03em", fontFamily: "var(--font-elnath), sans-serif" }}>KALPANA 3.0</span>
+                  <span style={{ display: "block", color: "rgba(255,255,255,0.4)", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase" }}>Srijan&nbsp;2026&nbsp;AI</span>
                 </div>
               </div>
-              <button
-                onClick={() => setIsOpen(false)}
-                style={{ background: "transparent", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center", padding: 6, borderRadius: 8, transition: "color 0.15s, background 0.15s" }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#f09400"; (e.currentTarget as HTMLButtonElement).style.background = "rgba(240,148,0,0.1)"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.4)"; (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
-                aria-label="Close chat"
-              >
-                <X size={17} />
-              </button>
+              {/* Header buttons: fullscreen + close */}
+              <div style={{ display: "flex", gap: 4 }}>
+                <button onClick={() => setIsFullscreen(true)} className="srijan-fs-btn"
+                  style={{ background: "transparent", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center", padding: 6, borderRadius: 8 }}
+                  aria-label="Fullscreen"
+                ><Maximize2 size={15} /></button>
+                <button onClick={() => setIsOpen(false)} className="srijan-fs-btn"
+                  style={{ background: "transparent", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center", padding: 6, borderRadius: 8 }}
+                  aria-label="Close chat"
+                ><X size={17} /></button>
+              </div>
             </div>
 
             {/* Messages */}
-            <ChatMessages
-              messages={messages}
-              isLoading={isLoading}
-              onQuickReply={handleQuickReply}
-            />
+            <ChatMessages messages={messages} isLoading={isLoading} onQuickReply={handleQuickReply} />
 
             {/* Input */}
             <div style={{ padding: "10px 12px", borderTop: "1px solid rgba(235,216,125,0.1)", display: "flex", gap: 8, alignItems: "flex-end", background: "rgba(255,255,255,0.02)" }}>
               <textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Enter message…"
-                rows={1}
-                className="srijan-textarea"
+                value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
+                placeholder="Enter message…" rows={1} className="srijan-textarea"
                 style={{ flex: 1, background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.9)", fontSize: 13, padding: "11px 14px", borderRadius: 12, border: "1px solid rgba(235,216,125,0.15)", outline: "none", resize: "none", minHeight: 44, maxHeight: 128, fontFamily: "inherit", lineHeight: 1.5, caretColor: "#f09400" }}
                 onFocus={(e) => { (e.target as HTMLTextAreaElement).style.borderColor = "rgba(235,216,125,0.35)"; }}
                 onBlur={(e) => { (e.target as HTMLTextAreaElement).style.borderColor = "rgba(235,216,125,0.15)"; }}
               />
-              <button
-                onClick={handleSend}
-                disabled={isLoading || !input.trim()}
-                style={{ width: 44, height: 44, borderRadius: 12, border: "none", cursor: isLoading || !input.trim() ? "not-allowed" : "pointer", background: isLoading || !input.trim() ? "rgba(235,216,125,0.1)" : "linear-gradient(135deg, #f09400, #ebd87d)", color: isLoading || !input.trim() ? "rgba(255,255,255,0.25)" : "#160505", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s", opacity: isLoading || !input.trim() ? 0.5 : 1 }}
-              >
+              <button onClick={handleSend} disabled={isLoading || !input.trim()}
+                style={{ width: 44, height: 44, borderRadius: 12, border: "none", cursor: isLoading || !input.trim() ? "not-allowed" : "pointer", background: isLoading || !input.trim() ? "rgba(235,216,125,0.1)" : "linear-gradient(135deg, #f09400, #ebd87d)", color: isLoading || !input.trim() ? "rgba(255,255,255,0.25)" : "#160505", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s", opacity: isLoading || !input.trim() ? 0.5 : 1 }}>
                 <Send size={17} />
               </button>
             </div>
@@ -228,9 +286,7 @@ export default function ChatWidget() {
         {/* Toggle button row */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {!isOpen && (
-            <div
-              style={{ background: "linear-gradient(135deg, rgba(240,148,0,0.15), rgba(235,216,125,0.1))", border: "1px solid rgba(235,216,125,0.2)", borderRadius: 10, padding: "7px 12px", color: "rgba(255,255,255,0.85)", fontSize: 12, backdropFilter: "blur(8px)", position: "relative", whiteSpace: "nowrap" }}
-            >
+            <div style={{ background: "linear-gradient(135deg, rgba(240,148,0,0.15), rgba(235,216,125,0.1))", border: "1px solid rgba(235,216,125,0.2)", borderRadius: 10, padding: "7px 12px", color: "rgba(255,255,255,0.85)", fontSize: 12, backdropFilter: "blur(8px)", position: "relative", whiteSpace: "nowrap" }}>
               <span style={{ color: "#ebd87d", fontWeight: 700 }}>Doubts?</span>{" "}
               I&apos;m here to help!
               <span style={{ position: "absolute", right: -5, top: "50%", transform: "translateY(-50%) rotate(45deg)", width: 9, height: 9, background: "linear-gradient(135deg, transparent 50%, rgba(235,216,125,0.2) 50%)", border: "1px solid rgba(235,216,125,0.2)", borderLeft: "none", borderBottom: "none" }} />
@@ -244,11 +300,8 @@ export default function ChatWidget() {
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(235,216,125,0.4)"; }}
             aria-label="Toggle chat"
           >
-            <img
-              src={BOT_AVATAR}
-              alt="Kalpana"
-              className="srijan-toggle-img-size"
-              style={{ objectFit: "cover", display: "block", paddingBottom: 4 }}
+            <img src={BOT_AVATAR} alt="Kalpana" className="srijan-toggle-img-size"
+              style={{ display: "block" }}
               onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_AVATAR; }}
             />
           </button>
